@@ -2,4 +2,5 @@
 <resources>
     <color name="ColorPrimary">#cc0000</color>
     <color name="ColorPrimaryDark">#ad0303</color>
+    <color name="headers">#5b5b5b</color>
 </resources>

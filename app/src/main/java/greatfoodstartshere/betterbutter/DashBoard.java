@@ -1,12 +1,17 @@
 package greatfoodstartshere.betterbutter;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -20,6 +25,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import greatfoodstartshere.betterbutter.adapters.CookBookAdapter;
 import greatfoodstartshere.betterbutter.models.CookBook;
 import greatfoodstartshere.betterbutter.models.Recipe;
 import greatfoodstartshere.betterbutter.models.User;
@@ -27,24 +33,57 @@ import greatfoodstartshere.betterbutter.volley.AppController;
 
 public class DashBoard extends AppCompatActivity {
 
+    String TAG = "DashBoard Activity";
+
     private ArrayList<CookBook> dashboardList;
+    ArrayList<Recipe> browseList;
     private Toolbar mToolbar;
     private SearchView searchView;
+    RecyclerView rv;
+    LinearLayoutManager llm;
+    CookBookAdapter cookBookAdapter;
+    ImageView navDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard);
 
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        Bundle bdl = getIntent().getExtras();
+        dashboardList = bdl.getParcelableArrayList("List");
+
+        Initialise();
+        InitialiseListeners();
+
         setSupportActionBar(mToolbar);
 
-        GetCookBook();
+        rv.setHasFixedSize(true);
+        rv.setLayoutManager(llm);
+        rv.setAdapter(cookBookAdapter);
     }
 
 
-    public void GetCookBook(){
-        String url = "http://192.168.1.6/json/my_feed.json";
+    public void Initialise(){
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        rv = (RecyclerView)findViewById(R.id.rv);
+        llm = new LinearLayoutManager(this);
+        cookBookAdapter = new CookBookAdapter(dashboardList);
+        navDrawer = (ImageView) findViewById(R.id.menu);
+    }
+
+
+    public void InitialiseListeners(){
+        navDrawer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GetBrowseRecipes();
+            }
+        });
+    }
+
+
+    public void GetBrowseRecipes(){
+        String url = "http://192.168.1.6/json/browse_recipe_response_new.json";
         final ProgressDialog pDialog = new ProgressDialog(this);
         pDialog.setMessage("Getting Data...");
         pDialog.setCancelable(false);
@@ -54,46 +93,40 @@ public class DashBoard extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
 
-                dashboardList = new ArrayList<>();
+                browseList = new ArrayList<>();
 
                 try {
-                    CookBook cb = new CookBook();
-                    cb.setNext(response.getString("next"));
-                    cb.setPrevious(response.getString("previous"));
+                    Recipe re = new Recipe();
+                    re.setNext(response.getString("next"));
+                    re.setPrevious(response.getString("previous"));
                     JSONArray results = response.getJSONArray("results");
                     JSONObject result = results.getJSONObject(0);
-                    cb.setId(result.getInt("id"));
-                    cb.setTitle(result.getString("title"));
-                    cb.setUrl(result.getString("url"));
-                    cb.setLikeCount(result.getInt("like_count"));
-                    cb.setHasLiked(result.getBoolean("has_liked"));
-                    cb.setMemberFollowerCount(result.getInt("member_follower_count"));
-                    cb.setIsFollowing(result.getBoolean("is_following"));
-                    cb.setShareCount(result.getInt("share_count"));
-                    cb.setDescription(result.getString("description"));
-                    cb.setCaption(result.getString("caption"));
-                    cb.setEmailEnabled(result.getJSONObject("email").getBoolean("enabled"));
-                    JSONArray recipes = result.getJSONArray("recipes");
-                    ArrayList<Recipe> r = new ArrayList<Recipe>(recipes.length());
-                    JSONObject item;
-                    for(int i = 0; i < recipes.length(); i++){
-                        item = recipes.getJSONObject(i);
-                        r.add(new Recipe(item.getInt("id"), item.getString("name"),
-                                item.getString("url"), item.getString("image_url"),
-                                item.getInt("likes_count"), item.getBoolean("has_liked")));
-                    }
-                    cb.setRecipe(r);
+                    re.setId(result.getInt("id"));
+                    re.setName(result.getString("name"));
+                    re.setUrl(result.getString("url"));
+                    re.setLikeCount(result.getInt("likes"));
+                    re.setLiked(result.getBoolean("has_liked"));
+                    re.setShares(result.getInt("shares"));
+                    re.setImageUrl(result.getString("image_url"));
                     JSONObject user = result.getJSONObject("user");
                     User u = new User(user.getInt("id"), user.getString("name"),
-                            user.getString("image_url"), user.getString("last_update"),
                             user.getString("url"));
-                    cb.setUser(u);
-                } catch (JSONException e) {
-                    Log.wtf("MainActivity", "Json Parsing Error Caught");
-                }
+                    re.setUser(u);
 
+                    //Parsing ends
+                    browseList.add(re);
+                    browseList.add(re);
+
+                } catch (JSONException e) {
+                    Log.wtf(TAG, "Json Parsing Error Caught");
+                }
                 pDialog.hide();
-                Log.wtf("MainActivity", "Get data Success");
+
+                //Browse Launched
+                Intent i = new Intent(getApplicationContext(), Browse.class);
+                i.putParcelableArrayListExtra("List", browseList);
+                startActivity(i);
+
             }
         }, new Response.ErrorListener() {
             @Override

@@ -8,12 +8,11 @@
         layout="@layout/toolbar">
     </include>
 
-    <include
-        android:id="@+id/yo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/rv"
         android:layout_below="@+id/toolbar"
-        layout="@layout/cookbook_card">
-    </include>
+        />
 
 </RelativeLayout>

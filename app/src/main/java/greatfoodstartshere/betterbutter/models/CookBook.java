@@ -1,17 +1,20 @@
 package greatfoodstartshere.betterbutter.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 /**
  * Created by jyot on 29/9/15.
  */
-public class CookBook {
+public class CookBook implements Parcelable {
 
     String next, previous, title, url, description, caption;
     int id, likeCount, memberFollowerCount, shareCount;
     boolean hasLiked, isFollowing, emailEnabled;
     User user;
-    ArrayList<Recipe> recipe;
+    ArrayList<Recipe> recipe = new ArrayList<>();
 
     public String getNext() {
         return next;
@@ -132,4 +135,61 @@ public class CookBook {
     public void setRecipe(ArrayList<Recipe> recipe) {
         this.recipe = recipe;
     }
+
+
+    public CookBook(){}
+
+
+    public CookBook(Parcel source){
+        id = source.readInt();
+        likeCount = source.readInt();
+        memberFollowerCount = source.readInt();
+        shareCount = source.readInt();
+        next = source.readString();
+        previous = source.readString();
+        title = source.readString();
+        url = source.readString();
+        description = source.readString();
+        caption = source.readString();
+        hasLiked = (Boolean) source.readValue(null);
+        isFollowing = (Boolean) source.readValue(null);
+        emailEnabled = (Boolean) source.readValue(null);
+        user = source.readParcelable(getClass().getClassLoader());
+        source.readTypedList(recipe, Recipe.CREATOR);
+    }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeInt(likeCount);
+        dest.writeInt(memberFollowerCount);
+        dest.writeInt(shareCount);
+        dest.writeString(next);
+        dest.writeString(previous);
+        dest.writeString(title);
+        dest.writeString(url);
+        dest.writeString(description);
+        dest.writeString(caption);
+        dest.writeValue(hasLiked);
+        dest.writeValue(isFollowing);
+        dest.writeValue(emailEnabled);
+        dest.writeParcelable(user, flags);
+        dest.writeTypedList(recipe);
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public CookBook createFromParcel(Parcel in) {
+            return new CookBook(in);
+        }
+
+        public CookBook[] newArray(int size) {
+            return new CookBook[size];
+        }
+    };
 }
