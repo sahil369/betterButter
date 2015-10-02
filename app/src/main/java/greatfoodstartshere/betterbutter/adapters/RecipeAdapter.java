@@ -9,20 +9,26 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+
 import java.util.List;
 
 import greatfoodstartshere.betterbutter.R;
 import greatfoodstartshere.betterbutter.models.CookBook;
 import greatfoodstartshere.betterbutter.models.Recipe;
+import greatfoodstartshere.betterbutter.volley.AppController;
 
 /**
  * Created by jyot on 1/10/15.
  */
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
 
+    ImageLoader imageLoader = AppController.getInstance().getImageLoader();
+
     public static class RecipeViewHolder extends RecyclerView.ViewHolder {
         CardView cv;
-        ImageView image;
+        NetworkImageView image;
         TextView name, userName;
         Button share, like;
 
@@ -31,7 +37,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
             cv = (CardView) itemView.findViewById(R.id.cv_recipe);
             name = (TextView) itemView.findViewById(R.id.name);
             userName = (TextView) itemView.findViewById(R.id.user_name);
-            image = (ImageView) itemView.findViewById(R.id.image);
+            image = (NetworkImageView) itemView.findViewById(R.id.image);
             share = (Button) itemView.findViewById(R.id.share_recipe);
             like = (Button) itemView.findViewById(R.id.like_recipe);
         }
@@ -58,7 +64,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
     public void onBindViewHolder(RecipeViewHolder holder, int i) {
         holder.userName.setText(recipes.get(i).getUser().getName());
         holder.name.setText(recipes.get(i).getName());
-        //holder.profilePic.setImageResource(cookBooks.get(i).photoId);
+        holder.image.setImageUrl(recipes.get(i).getImageUrl(), imageLoader);
     }
 
     @Override
